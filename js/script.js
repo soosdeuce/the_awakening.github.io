@@ -136,7 +136,7 @@ function validateForm() {
       status.textContent = 'A valid address and a longer note are required before transmission.';
       return;
     }
-    status.textContent = 'Transmission accepted. The network will acknowledge your intent shortly.';
+    status.textContent = 'Transmission accepted. The signal will acknowledge your intent shortly.';
     form.reset();
   });
 }
