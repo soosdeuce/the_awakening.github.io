@@ -177,28 +177,47 @@ function buildCanvasScene() {
     width = canvas.width = window.innerWidth * window.devicePixelRatio;
     height = canvas.height = window.innerHeight * window.devicePixelRatio;
     ctx.setTransform(window.devicePixelRatio, 0, 0, window.devicePixelRatio, 0, 0);
-    particles = Array.from({ length: Math.min(45, Math.floor((window.innerWidth + window.innerHeight) / 70)) }, () => ({
+    particles = Array.from({ length: Math.min(90, Math.floor((window.innerWidth + window.innerHeight) / 35)) }, () => ({
       x: Math.random() * window.innerWidth,
       y: Math.random() * window.innerHeight,
-      vx: (Math.random() - 0.5) * 0.4,
-      vy: (Math.random() - 0.5) * 0.4,
-      r: Math.random() * 2 + 0.6,
+      vx: (Math.random() - 0.5) * 0.6,
+      vy: (Math.random() - 0.5) * 0.6,
+      r: Math.random() * 2.5 + 0.6,
     }));
   };
 
   const animate = () => {
-    ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
-    hue = (hue + 0.02) % 360;
-    particles.forEach((p) => {
+    ctx.fillStyle = 'rgba(3, 6, 17, 0.16)';
+    ctx.fillRect(0, 0, window.innerWidth, window.innerHeight);
+    hue = (hue + 0.08) % 360;
+
+    particles.forEach((p, index) => {
       p.x += p.vx;
       p.y += p.vy;
-      if (p.x < -20 || p.x > window.innerWidth + 20) p.x = Math.random() * window.innerWidth;
-      if (p.y < -20 || p.y > window.innerHeight + 20) p.y = Math.random() * window.innerHeight;
+      if (p.x < 0 || p.x > window.innerWidth) p.vx *= -1;
+      if (p.y < 0 || p.y > window.innerHeight) p.vy *= -1;
+
       ctx.beginPath();
-      ctx.fillStyle = `hsla(${hue}, 80%, 70%, 0.5)`;
+      ctx.fillStyle = `hsla(${hue}, 90%, 72%, 0.7)`;
       ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
       ctx.fill();
+
+      for (let j = index + 1; j < particles.length; j += 1) {
+        const q = particles[j];
+        const dx = p.x - q.x;
+        const dy = p.y - q.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist < 140) {
+          ctx.beginPath();
+          ctx.strokeStyle = `rgba(115,247,255,${1 - dist / 140})`;
+          ctx.lineWidth = 0.8;
+          ctx.moveTo(p.x, p.y);
+          ctx.lineTo(q.x, q.y);
+          ctx.stroke();
+        }
+      }
     });
+
     requestAnimationFrame(animate);
   };
 
