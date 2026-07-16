@@ -1,0 +1,2 @@
+# The-Awakening-Delhi-Public-School-Ghaziabad-vasundhara-WEBSITE
+Official Nexus Node 2026 submission by DPS Ghaziabad Vasundhara. An geneuinely immersive 27-page web experience exploring AI Consciousness &amp; Machine Cognition through interactive visualizations, neural network animations, modern UI/UX, responsive design, and HTML, CSS, JavaScript, &amp; Tailwind CSS, we have also used minor ai for content generation.
