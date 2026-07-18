@@ -7,11 +7,12 @@ const canvas = document.querySelector('.neural-canvas');
 const navLinks = Array.from(document.querySelectorAll('.nav-links a'));
 const toggleTheme = document.querySelector('.theme-toggle');
 const heroTyping = document.querySelector('.typing');
+const reveals = Array.from(document.querySelectorAll('.reveal'));
+const parallaxItems = Array.from(document.querySelectorAll('[data-parallax]'));
 const counters = Array.from(document.querySelectorAll('[data-counter]'));
 const faqItems = Array.from(document.querySelectorAll('.faq-item'));
 const form = document.querySelector('.contact-form');
 const progressLabel = document.querySelector('.reading-progress');
-const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 const themeState = localStorage.getItem('awakening-theme') || 'dark';
 body.classList.toggle('light', themeState === 'light');
@@ -33,15 +34,31 @@ function initLoader() {
 }
 
 function initProgressBar() {
+  let latestScroll = window.scrollY;
   const update = () => {
-    const scrollTop = window.scrollY;
+    latestScroll = window.scrollY;
     const height = document.documentElement.scrollHeight - window.innerHeight;
-    const percent = height > 0 ? Math.min(100, (scrollTop / height) * 100) : 0;
+    const percent = height > 0 ? Math.min(100, (latestScroll / height) * 100) : 0;
     if (progressBar) progressBar.style.width = `${percent}%`;
     if (progressLabel) progressLabel.textContent = `${Math.round(percent)}%`;
+    ticking = false;
   };
-  window.addEventListener('scroll', update, { passive: true });
-  window.addEventListener('resize', update);
+
+  let ticking = false;
+  const onScroll = () => {
+    if (!ticking) {
+      ticking = true;
+      requestAnimationFrame(update);
+    }
+  };
+
+  window.addEventListener('scroll', onScroll, { passive: true });
+  window.addEventListener('resize', () => {
+    if (!ticking) {
+      ticking = true;
+      requestAnimationFrame(update);
+    }
+  });
   update();
 }
 
@@ -82,128 +99,59 @@ function initTyping() {
   type();
 }
 
-function collectRevealTargets() {
-  const selectors = [
-    'main > section',
-    'main article',
-    'main .panel',
-    'main .hero-card',
-    'main .hero-copy',
-    'main .hero-visual',
-    'main .topic-card',
-    'main .topic-image',
-    'main .metric-card',
-    'main .timeline-item',
-    'main .research-card',
-    'main .flow-card',
-    'main .gallery-item',
-    'main .quote-block',
-    'main .stacked-list article',
-    'main .faq-item',
-    'main .contact-form',
-    'main .footer',
-    '.signal-panel',
-    '.signal-viewport',
-    '.signal-badge',
-    '.section-heading',
-    '.hero-actions .btn',
-    '.hero-actions a',
-    'main img',
-  ];
-
-  const targets = [];
-  const seen = new Set();
-
-  selectors.forEach((selector) => {
-    document.querySelectorAll(selector).forEach((element) => {
-      if (element.closest('.loader, .progress-bar, .cursor-glow, .neural-canvas, .noise-layer, .sticky-nav, .nav-shell, .nav-links, .nav-actions, .brand, .brand-mark')) return;
-      if (element.closest('.no-reveal')) return;
-      if (!element.classList.contains('reveal')) {
-        element.classList.add('reveal');
-      }
-      if (!seen.has(element)) {
-        seen.add(element);
-        targets.push(element);
-      }
-    });
-  });
-
-  return targets;
-}
-
 function initReveal() {
-  const revealTargets = collectRevealTargets();
-  if (!revealTargets.length) return;
-
-  if (prefersReducedMotion) {
-    revealTargets.forEach((item) => item.classList.add('is-visible'));
-    return;
-  }
-
   const observer = new IntersectionObserver((entries) => {
     entries.forEach((entry) => {
-      const target = entry.target;
       if (entry.isIntersecting) {
-        target.classList.add('is-visible');
+        entry.target.classList.add('is-visible');
       } else {
-        target.classList.remove('is-visible');
+        entry.target.classList.remove('is-visible');
       }
     });
-  }, { threshold: 0.12, rootMargin: '0px 0px -6% 0px' });
+  }, { threshold: 0.18, rootMargin: '0px 0px -12% 0px' });
 
-  revealTargets.forEach((item, index) => {
-    item.dataset.revealOrder = String(index);
-    const parent = item.parentElement;
-    const parentIndex = parent && parent.children ? Array.from(parent.children).indexOf(item) : 0;
-    item.style.setProperty('--reveal-delay', `${Math.min(index * 70 + parentIndex * 20, 360)}ms`);
+  reveals.forEach((item, index) => {
+    if (!item.dataset.revealDelay) {
+      const delay = Math.min(index * 60, 320);
+      item.style.setProperty('--reveal-delay', `${delay}ms`);
+    }
     observer.observe(item);
   });
 }
 
 function initParallax() {
-  if (prefersReducedMotion) return;
+  if (!parallaxItems.length) return;
 
-  const parallaxTargets = Array.from(document.querySelectorAll('[data-parallax], .parallax, .hero-card, .hero-visual, .panel, .topic-image, .quote-block, .gallery-item, .signal-panel, .signal-viewport, .topic-card, .metric-card, .research-card, .flow-card, .footer')).filter((element) => !element.closest('.sticky-nav'));
-  if (!parallaxTargets.length) return;
+  let latestScroll = window.scrollY;
+  let ticking = false;
 
-  const isMobile = window.matchMedia('(max-width: 760px)').matches;
-  let frameId = 0;
-
-  const updateParallax = () => {
-    frameId = 0;
-    const scrollY = window.scrollY;
-    const viewportHeight = window.innerHeight;
-
-    parallaxTargets.forEach((element) => {
-      const rect = element.getBoundingClientRect();
-      if (rect.bottom < -80 || rect.top > viewportHeight + 80) return;
-
-      const depth = Number(element.dataset.parallaxDepth || (
-        element.classList.contains('hero-visual') ? 0.18 :
-        element.classList.contains('hero-card') ? 0.12 :
-        element.classList.contains('topic-image') ? 0.2 :
-        element.classList.contains('quote-block') ? 0.1 :
-        element.classList.contains('signal-viewport') || element.classList.contains('signal-panel') ? 0.12 :
-        element.classList.contains('gallery-item') ? 0.08 :
-        0.06
-      ));
-      const intensity = isMobile ? depth * 0.55 : depth;
-      const offsetY = ((scrollY + viewportHeight - rect.top) * intensity) * 0.05;
-      const offsetX = Math.min(10, Math.max(-10, (Math.sin((scrollY + rect.top) / 420) * 4) * intensity));
-
-      element.style.setProperty('--parallax-x', `${offsetX}px`);
-      element.style.setProperty('--parallax-y', `${offsetY}px`);
+  const update = () => {
+    parallaxItems.forEach((item) => {
+      const factor = Number(item.dataset.parallaxFactor || item.dataset.parallax || 0.08);
+      const direction = item.dataset.parallaxDirection || 'vertical';
+      const eased = latestScroll * factor;
+      if (direction === 'horizontal') {
+        item.style.setProperty('--parallax-x', `${eased.toFixed(2)}px`);
+        item.style.setProperty('--parallax-y', '0px');
+      } else {
+        item.style.setProperty('--parallax-x', '0px');
+        item.style.setProperty('--parallax-y', `${eased.toFixed(2)}px`);
+      }
     });
+    ticking = false;
   };
 
-  const requestUpdate = () => {
-    if (frameId) return;
-    frameId = requestAnimationFrame(updateParallax);
+  const onScroll = () => {
+    latestScroll = window.scrollY;
+    if (!ticking) {
+      ticking = true;
+      requestAnimationFrame(update);
+    }
   };
 
-  window.addEventListener('scroll', requestUpdate, { passive: true });
-  window.addEventListener('resize', requestUpdate);
-  requestUpdate();
+  window.addEventListener('scroll', onScroll, { passive: true });
+  window.addEventListener('resize', onScroll);
+  update();
 }
 
 function initCounters() {
@@ -248,7 +196,7 @@ function validateForm() {
       status.textContent = 'A valid address and a longer note are required before transmission.';
       return;
     }
-    status.textContent = 'Transmission accepted. The signal will acknowledge your intent shortly.';
+    status.textContent = 'Transmission accepted. The network will acknowledge your intent shortly.';
     form.reset();
   });
 }
