@@ -587,6 +587,124 @@ function buildGallery() {
   observer.observe(sentinel);
 }
 
+function initNavbarHideOnScroll() {
+  const navbar = document.querySelector('.sticky-nav');
+  if (!navbar) return;
+  
+  let lastScrollY = window.scrollY;
+  let isNavbarHidden = false;
+  let ticking = false;
+  
+  const scrollThreshold = window.innerHeight * 0.3;
+  
+  const updateNavbar = () => {
+    const currentScroll = window.scrollY;
+    const scrollDirection = currentScroll > lastScrollY ? 'down' : 'up';
+    
+    // Hide navbar when scrolling down past threshold
+    if (currentScroll > scrollThreshold && scrollDirection === 'down' && !isNavbarHidden) {
+      navbar.classList.add('navbar-hidden');
+      isNavbarHidden = true;
+    }
+    
+    // Show navbar when scrolling up or near top
+    if ((currentScroll < scrollThreshold || scrollDirection === 'up') && isNavbarHidden) {
+      navbar.classList.remove('navbar-hidden');
+      isNavbarHidden = false;
+    }
+    
+    lastScrollY = currentScroll;
+    ticking = false;
+  };
+  
+  const onScroll = () => {
+    if (!ticking) {
+      requestAnimationFrame(updateNavbar);
+      ticking = true;
+    }
+  };
+  
+  window.addEventListener('scroll', onScroll, { passive: true });
+}
+
+function initMobileMenu() {
+  const navLinks = document.querySelector('.nav-links');
+  if (!navLinks) return;
+  
+  // Create mobile menu toggle button
+  const toggleButton = document.createElement('button');
+  toggleButton.className = 'mobile-menu-toggle';
+  toggleButton.setAttribute('aria-label', 'Toggle navigation menu');
+  toggleButton.setAttribute('aria-expanded', 'false');
+  toggleButton.setAttribute('aria-controls', 'mobile-nav');
+  toggleButton.innerHTML = '<span></span><span></span><span></span>';
+  
+  // Create mobile nav container
+  const mobileNav = document.createElement('nav');
+  mobileNav.id = 'mobile-nav';
+  mobileNav.className = 'mobile-nav';
+  mobileNav.setAttribute('aria-label', 'Mobile navigation');
+  mobileNav.innerHTML = navLinks.innerHTML;
+  
+  // Insert into nav shell
+  const navShell = document.querySelector('.nav-shell');
+  const navActions = document.querySelector('.nav-actions');
+  if (navShell && navActions) {
+    navShell.insertBefore(toggleButton, navActions);
+    navShell.insertBefore(mobileNav, toggleButton.nextSibling);
+  }
+  
+  // Toggle handler
+  let isOpen = false;
+  toggleButton.addEventListener('click', () => {
+    isOpen = !isOpen;
+    toggleButton.setAttribute('aria-expanded', isOpen);
+    mobileNav.classList.toggle('is-open');
+  });
+  
+  // Close on link click
+  mobileNav.querySelectorAll('a').forEach(link => {
+    link.addEventListener('click', () => {
+      isOpen = false;
+      toggleButton.setAttribute('aria-expanded', false);
+      mobileNav.classList.remove('is-open');
+    });
+  });
+  
+  // Close on ESC key
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && isOpen) {
+      isOpen = false;
+      toggleButton.setAttribute('aria-expanded', false);
+      mobileNav.classList.remove('is-open');
+      toggleButton.focus();
+    }
+  });
+}
+
+function enhanceAccessibilityFocus() {
+  // Ensure all interactive elements have visible focus
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Tab') {
+      document.body.classList.add('keyboard-nav');
+    }
+  });
+  
+  document.addEventListener('mousedown', () => {
+    document.body.classList.remove('keyboard-nav');
+  });
+  
+  // Add proper aria-pressed state to theme toggle
+  const themeToggle = document.querySelector('.theme-toggle');
+  if (themeToggle) {
+    themeToggle.setAttribute('aria-pressed', body.classList.contains('light'));
+    const observer = new MutationObserver(() => {
+      themeToggle.setAttribute('aria-pressed', body.classList.contains('light'));
+    });
+    observer.observe(body, { attributes: true, attributeFilter: ['class'] });
+  }
+}
+
 function buildCanvasScene() {
   if (!canvas) return;
   const ctx = canvas.getContext('2d');
@@ -650,6 +768,7 @@ function buildCanvasScene() {
 
 document.addEventListener('DOMContentLoaded', () => {
   enhanceAccessibility();
+  enhanceAccessibilityFocus();
   initLoader();
   initProgressBar();
   initCursorGlow();
@@ -661,6 +780,8 @@ document.addEventListener('DOMContentLoaded', () => {
   validateForm();
   initActiveNav();
   initPageTransition();
+  initNavbarHideOnScroll();
+  initMobileMenu();
   buildPageVisuals();
   buildGallery();
   buildCanvasScene();
