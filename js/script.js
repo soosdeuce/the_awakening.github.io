@@ -199,7 +199,6 @@ const galleryFeed = [
   { src: 'https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=900&q=80', title: 'Signal lattice', caption: 'Patterns converge into a living field.' },
   { src: 'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=900&q=80', title: 'Human reflection', caption: 'Presence becomes a mirror of technology.' },
   { src: 'https://images.unsplash.com/photo-1500534623283-312aade485b7?auto=format&fit=crop&w=900&q=80', title: 'Open horizon', caption: 'Sparse landscapes frame the mind.' },
-  { src: 'https://images.unsplash.com/photo-1531746790731-6c087fecd65d?auto=format&fit=crop&w=900&q=80', title: 'Quiet inquiry', caption: 'Observation turns anticipation into knowledge.' },
   { src: 'https://images.unsplash.com/photo-1516321497487-e288fb19713f?auto=format&fit=crop&w=900&q=80', title: 'Connected thought', caption: 'Every keypress becomes an exchange.' },
   { src: 'https://images.unsplash.com/photo-1494526585095-c41746248156?auto=format&fit=crop&w=900&q=80', title: 'First light', caption: 'Order emerges from the threshold.' },
   { src: 'https://images.unsplash.com/photo-1487412912498-0447578fcca8?auto=format&fit=crop&w=900&q=80', title: 'Mirror state', caption: 'Reflection reveals a layered self.' },
