@@ -531,12 +531,7 @@ function buildGallery() {
     </section>`;
 
   if (mainContent) {
-    const footer = document.querySelector('.footer');
-    if (footer) {
-      footer.insertAdjacentHTML('beforebegin', markup);
-    } else {
-      mainContent.insertAdjacentHTML('beforeend', markup);
-    }
+    mainContent.insertAdjacentHTML('beforeend', markup);
   }
 
   const rootNode = document.querySelector('[data-gallery-root]');

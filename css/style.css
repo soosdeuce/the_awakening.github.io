@@ -14,7 +14,7 @@
   --radius-xl: 2rem;
   --radius-lg: 1.3rem;
   --radius-md: 0.95rem;
-  --max: 1400px;
+  --max-width: 1240px;
 }
 
 body.light {
